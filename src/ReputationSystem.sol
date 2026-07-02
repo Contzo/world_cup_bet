@@ -35,9 +35,7 @@ contract ReputationSystem is Ownable {
         _;
     }
 
-    constructor(address _predictionMarket) Ownable(msg.sender) {
-        sPredictionMarket = _predictionMarket;
-    }
+    constructor() Ownable(msg.sender) {}
 
     /*//////////////////////////////////////////////////////////////
                            External functions
