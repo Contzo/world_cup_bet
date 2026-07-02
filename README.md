@@ -64,8 +64,11 @@ forge install        # pulls submodule dependencies (forge-std, openzeppelin-con
 ## Build
 
 ```bash
-forge build
+forge build --skip PreditionMarket.sol
 ```
+
+> `src/PreditionMarket.sol` is an unrelated work-in-progress reference contract and does not
+> currently compile; `--skip` excludes it. The assessment lives entirely in `WorldCupBetting.sol`.
 
 ## Test
 
@@ -74,7 +77,7 @@ creation and resolution, net-of-fee payouts, fee withdrawal, timing and access-c
 slippage guard, the secondary market, the ERC20 lifecycle, and the losing/double-claim path.
 
 ```bash
-forge test -vv
+forge test --skip PreditionMarket.sol -vv
 ```
 
 Run a single scenario:
