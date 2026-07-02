@@ -76,12 +76,15 @@ contract WorldCupPrediction is Ownable {
     error WorldCupPrediction__ZeroAmount();
     error WorldCupPrediction__SharesTooLow(uint256);
     error WorldCupPrediction__InvalidAmount();
+    error WorldCupPrediction__CallerNotArbitrator();
+    error WorldCupPrediction__CloseTimeNotReached();
 
     /*//////////////////////////////////////////////////////////////
                                  Events
     //////////////////////////////////////////////////////////////*/
     event MarketCreated(uint256 indexed marketId, address indexed creator, string question);
     event BetPlaced(uint256 indexed betId, uint256 indexed marketId, address indexed bettor, uint256 amount);
+    event MarketResolved(uint256 indexed marketId, uint256 indexed winningOutcome);
 
     constructor(address _reputationSystem) Ownable(msg.sender) {
         sReputationSystem = IReputationSystem(_reputationSystem);
@@ -205,6 +208,25 @@ contract WorldCupPrediction is Ownable {
     /// @return The total pool size
     function getTotalPool(uint256 _marketId) external view returns (uint256) {
         return _getTotalPool(_marketId);
+    }
+
+    /// @notice resolve the market
+    /// @param _marketId The id of the market
+    /// @param _winningOutcome The index of the winning outcome
+    /// @inheritdoc Copies all missing tags from the base function (must be followed by the contract name)
+    function resolveMarket(uint256 _marketId, uint256 _winningOutcome) external {
+        // ── Checks ───────────────────────────────
+        Market memory market = sMarkets[_marketId];
+        if (msg.sender != market.arbitrator) revert WorldCupPrediction__CallerNotArbitrator();
+        if (market.status != MarketStatus.Open) revert WorldCupPrediction__MarketNotOpen();
+        if (block.timestamp < market.resolutionTime) revert WorldCupPrediction__CloseTimeNotReached();
+        if (_winningOutcome >= market.outcomes.length) revert WorldCupPrediction__InvalidOutcomeIndex();
+
+        // ── Effects ───────────────────────────────
+        market.status = MarketStatus.Resolved;
+        market.winningOutcome = _winningOutcome;
+
+        emit MarketResolved(_marketId, _winningOutcome);
     }
 
     /*//////////////////////////////////////////////////////////////
